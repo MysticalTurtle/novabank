@@ -59,7 +59,6 @@ class LocalDataSourceImpl implements LocalDataSource {
     try {
       final List<Map<String, dynamic>> maps = await database.query(
         _accountsTable,
-        orderBy: 'created_at DESC',
       );
       return AccountModel.fromJsonList(maps);
     } catch (e) {
@@ -70,10 +69,10 @@ class LocalDataSourceImpl implements LocalDataSource {
   @override
   Future<void> saveAccounts(List<AccountModel> accounts) async {
     final batch = database.batch();
-    
+
     // Clear existing accounts
     batch.delete(_accountsTable);
-    
+
     // Insert new accounts
     for (final account in accounts) {
       batch.insert(
@@ -82,7 +81,7 @@ class LocalDataSourceImpl implements LocalDataSource {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit(noResult: true);
   }
 
@@ -112,27 +111,27 @@ class LocalDataSourceImpl implements LocalDataSource {
   }) async {
     final batch = database.batch();
     final currentPage = page ?? 1;
-    
+
     // Clear existing transactions for this account and page
     batch.delete(
       _transactionsTable,
       where: 'account_id = ? AND page = ?',
       whereArgs: [accountId, currentPage],
     );
-    
+
     // Insert new transactions
     for (final transaction in transactions) {
       final jsonData = transaction.toJson();
       jsonData['account_id'] = accountId;
       jsonData['page'] = currentPage;
-      
+
       batch.insert(
         _transactionsTable,
         jsonData,
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit(noResult: true);
   }
 

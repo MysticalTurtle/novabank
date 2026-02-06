@@ -27,7 +27,17 @@ class _TransferViewState extends State<TransferView> {
       body: BlocConsumer<TransferCubit, TransferState>(
         listener: (context, state) {
           if (state.status == TransferStatus.error) {
-            ToastHelper.showErrorToast(context, state.errorMessage ?? 'Error');
+            final errorMessage = state.errorMessage ?? 'Error';
+            ToastHelper.showErrorToast(context, errorMessage);
+
+            if (errorMessage.contains('Internet') ||
+                errorMessage.contains('conexión')) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              });
+            }
           } else if (state.status == TransferStatus.completed) {
             ToastHelper.showSuccessToast(context, '¡Transferencia completada!');
             Navigator.of(context).pop();
