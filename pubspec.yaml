@@ -43,6 +43,8 @@ dependencies:
   get_it: ^9.2.0
   bloc: ^9.2.0
   flutter_bloc: ^9.1.1
+  flutter_styled_toast: ^2.3.0
+  connectivity_plus: ^6.1.2
 
 dev_dependencies:
   flutter_test:

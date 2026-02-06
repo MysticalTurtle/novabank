@@ -14,36 +14,43 @@ abstract class Failure extends Equatable {
 /// Failure when the server is unreachable or network is down
 class NetworkFailure extends Failure {
   const NetworkFailure([String message = 'Network error occurred'])
-      : super(message);
+    : super(message);
+}
+
+/// Failure when there is no internet connection
+class NoInternetFailure extends Failure {
+  const NoInternetFailure([String message = 'No hay conexión a Internet'])
+    : super(message);
 }
 
 /// Failure when the server returns an error response
 class ServerFailure extends Failure {
-  const ServerFailure(String message, {String? code}) : super(message, code: code);
+  const ServerFailure(String message, {String? code})
+    : super(message, code: code);
 }
 
 /// Failure when authentication fails
 class AuthenticationFailure extends Failure {
   const AuthenticationFailure([String message = 'Authentication failed'])
-      : super(message);
+    : super(message);
 }
 
 /// Failure when authorization fails (e.g., 403 Forbidden)
 class AuthorizationFailure extends Failure {
   const AuthorizationFailure([String message = 'Not authorized'])
-      : super(message);
+    : super(message);
 }
 
 /// Failure when a resource is not found (e.g., 404)
 class NotFoundFailure extends Failure {
   const NotFoundFailure([String message = 'Resource not found'])
-      : super(message);
+    : super(message);
 }
 
 /// Failure when local storage operations fail
 class CacheFailure extends Failure {
   const CacheFailure([String message = 'Cache operation failed'])
-      : super(message);
+    : super(message);
 }
 
 /// Failure when validation fails
@@ -54,5 +61,5 @@ class ValidationFailure extends Failure {
 /// Failure for unknown errors
 class UnknownFailure extends Failure {
   const UnknownFailure([String message = 'An unknown error occurred'])
-      : super(message);
+    : super(message);
 }

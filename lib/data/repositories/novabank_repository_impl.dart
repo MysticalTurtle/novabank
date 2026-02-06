@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:novabank/core/error/failures.dart';
+import 'package:novabank/core/utils/connectivity_service.dart';
 import 'package:novabank/core/utils/result.dart';
 import 'package:novabank/data/auth/auth_service.dart';
 import 'package:novabank/data/client/api_client.dart';
@@ -13,16 +14,23 @@ class NovabankRepositoryImpl implements NovabankRepository {
   final LocalDataSource localDataSource;
   final AuthService authService;
   final ApiClient apiClient;
+  final ConnectivityService connectivityService;
 
   NovabankRepositoryImpl({
     required this.apiDataSource,
     required this.localDataSource,
     required this.authService,
     required this.apiClient,
+    required this.connectivityService,
   });
 
   @override
   Future<Result<void>> login() async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final result = await authService.login();
 
@@ -67,16 +75,26 @@ class NovabankRepositoryImpl implements NovabankRepository {
 
   @override
   Future<Result<List<AccountModel>>> getAccounts() async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+
+    if (!hasInternet) {
+      try {
+        final cachedAccounts = await localDataSource.getAccounts();
+        if (cachedAccounts.isNotEmpty) {
+          return Result.success(cachedAccounts);
+        }
+      } catch (_) {
+      }
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
-      // Try to fetch from remote
       final accounts = await apiDataSource.getAccounts();
 
-      // Cache the results
       await localDataSource.saveAccounts(accounts);
 
       return Result.success(accounts);
     } on DioException catch (e) {
-      // On network error, try to return cached data
       if (_isNetworkError(e)) {
         try {
           final cachedAccounts = await localDataSource.getAccounts();
@@ -84,7 +102,6 @@ class NovabankRepositoryImpl implements NovabankRepository {
             return Result.success(cachedAccounts);
           }
         } catch (_) {
-          // Ignore cache errors
         }
         return Result.failure(const NetworkFailure());
       }
@@ -100,13 +117,33 @@ class NovabankRepositoryImpl implements NovabankRepository {
     String accountId, {
     int? page,
   }) async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+
+    if (!hasInternet) {
+      try {
+        final cachedTransactions = await localDataSource.getAccountTransactions(
+          accountId,
+          page: page,
+        );
+        if (cachedTransactions.isNotEmpty) {
+          return Result.success(
+            PaginatedTransactionsResponse(
+              transactions: cachedTransactions,
+              hasMore: true, // Assume more when offline
+            ),
+          );
+        }
+      } catch (_) {
+      }
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final response = await apiDataSource.getAccountTransactions(
         accountId,
         page: page,
       );
 
-      // Cache the results
       await localDataSource.saveAccountTransactions(
         accountId,
         response.transactions,
@@ -115,19 +152,19 @@ class NovabankRepositoryImpl implements NovabankRepository {
 
       return Result.success(response);
     } on DioException catch (e) {
-      // On network error, try to return cached data
       if (_isNetworkError(e)) {
         try {
           final cachedTransactions = await localDataSource
               .getAccountTransactions(accountId, page: page);
           if (cachedTransactions.isNotEmpty) {
-            return Result.success(PaginatedTransactionsResponse(
-              transactions: cachedTransactions,
-              hasMore: true, // Assume more when offline
-            ));
+            return Result.success(
+              PaginatedTransactionsResponse(
+                transactions: cachedTransactions,
+                hasMore: true, // Assume more when offline
+              ),
+            );
           }
         } catch (_) {
-          // Ignore cache errors
         }
         return Result.failure(const NetworkFailure());
       }
@@ -140,6 +177,11 @@ class NovabankRepositoryImpl implements NovabankRepository {
 
   @override
   Future<Result<List<BeneficiaryModel>>> getBeneficiaries() async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final beneficiaries = await apiDataSource.getBeneficiaries();
       return Result.success(beneficiaries);
@@ -155,6 +197,11 @@ class NovabankRepositoryImpl implements NovabankRepository {
     required String id,
     required double amount,
   }) async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final response = await apiDataSource.createTransfer(
         beneficiaryId: id,
@@ -172,6 +219,11 @@ class NovabankRepositoryImpl implements NovabankRepository {
   Future<Result<TransferResponseModel>> confirmTransfer(
     String transferId,
   ) async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final response = await apiDataSource.confirmTransfer(transferId);
       return Result.success(response);
@@ -187,6 +239,11 @@ class NovabankRepositoryImpl implements NovabankRepository {
     required String cardId,
     required String status,
   }) async {
+    final hasInternet = await connectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      return Result.failure(const NoInternetFailure());
+    }
+
     try {
       final response = await apiDataSource.updateCardStatus(cardId, status);
       return Result.success(response);
@@ -248,12 +305,10 @@ class NovabankRepositoryImpl implements NovabankRepository {
         return const NetworkFailure('Invalid SSL certificate');
 
       case DioExceptionType.unknown:
-      default:
         return UnknownFailure(error.message ?? 'Unknown error');
     }
   }
 
-  /// Checks if the error is a network-related error
   bool _isNetworkError(DioException error) {
     return error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||

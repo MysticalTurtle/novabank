@@ -1,6 +1,8 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:novabank/core/utils/connectivity_service.dart';
 import 'package:novabank/data/auth/auth_service.dart';
 import 'package:novabank/data/auth/mock_oauth_handler.dart';
 import 'package:novabank/data/auth/oauth_handler.dart';
@@ -13,7 +15,6 @@ import 'package:novabank/data/datasources/secure_storage/secure_storage_datasour
 import 'package:novabank/data/datasources/secure_storage/secure_storage_datasource_impl.dart';
 import 'package:novabank/data/repositories/novabank_repository_impl.dart';
 import 'package:novabank/domain/repositories/novabank_repository.dart';
-import 'package:novabank/ui/auth/cubit/auth_cubit.dart';
 import 'package:sqflite/sqflite.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -24,6 +25,7 @@ Future<void> setupDiCore() async {
   getIt.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
   );
+  getIt.registerLazySingleton<Connectivity>(() => Connectivity());
 
   // Initialize database
   final database = await LocalDataSourceImpl.initDatabase();
@@ -49,13 +51,16 @@ Future<void> setupDiCore() async {
   // OAuth
   getIt.registerLazySingleton<OAuthHandler>(() => MockOAuthHandler());
 
+  // Connectivity
+  getIt.registerLazySingleton<ConnectivityService>(
+    () => ConnectivityServiceImpl(connectivity: getIt<Connectivity>()),
+  );
+
   // Data sources
   getIt.registerLazySingleton<ApiDataSource>(() => MockApiDataSource());
 
   getIt.registerLazySingleton<LocalDataSource>(
-    () => LocalDataSourceImpl(
-      database: getIt<Database>(),
-    ),
+    () => LocalDataSourceImpl(database: getIt<Database>()),
   );
 
   getIt.registerLazySingleton<SecureStorageDataSource>(
@@ -84,6 +89,7 @@ Future<void> setupDiCore() async {
       localDataSource: getIt<LocalDataSource>(),
       authService: getIt<AuthService>(),
       apiClient: getIt<ApiClient>(),
+      connectivityService: getIt<ConnectivityService>(),
     ),
   );
 

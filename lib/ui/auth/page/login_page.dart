@@ -54,7 +54,7 @@ class _LoginView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Secure Banking Experience',
+                      'Experiencia de Banca Móvil Segura',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],
@@ -85,7 +85,7 @@ class _LoginView extends StatelessWidget {
                             Icon(Icons.login),
                             SizedBox(width: 8),
                             Text(
-                              'Sign In with OAuth',
+                              'Iniciar sesión con OAuth',
                               style: TextStyle(fontSize: 16),
                             ),
                           ],
@@ -96,7 +96,7 @@ class _LoginView extends StatelessWidget {
                     
                     // Information text
                     Text(
-                      'Secure authentication with OAuth 2.0 + PKCE',
+                      'Autenticación segura con OAuth 2.0 + PKCE',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[500],

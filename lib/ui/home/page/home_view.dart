@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:novabank/ui/auth/cubit/auth_cubit.dart';
 import 'package:novabank/ui/home/cubit/home_cubit.dart';
+import 'package:novabank/ui/transfer/page/transfer_page.dart';
 import 'package:novabank/ui/widgets/account_tile.dart';
 
 class HomeView extends StatelessWidget {
@@ -21,6 +22,15 @@ class HomeView extends StatelessWidget {
             },
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const TransferPage()),
+          );
+        },
+        icon: const Icon(Icons.send),
+        label: const Text('Transferir dinero'),
       ),
       body: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
