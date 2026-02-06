@@ -5,14 +5,12 @@ class ApiClient {
   final Dio _dio;
   String? _accessToken;
   String? _refreshToken;
-  final Future<TokenResponseModel?> Function(String refreshToken)? onTokenRefresh;
+  final Future<TokenResponseModel?> Function(String refreshToken)?
+  onTokenRefresh;
   final void Function()? onTokenExpired;
 
-  ApiClient({
-    String? baseUrl,
-    this.onTokenRefresh,
-    this.onTokenExpired,
-  }) : _dio = Dio(BaseOptions(baseUrl: baseUrl ?? '')) {
+  ApiClient({String? baseUrl, this.onTokenRefresh, this.onTokenExpired})
+    : _dio = Dio(BaseOptions(baseUrl: baseUrl ?? '')) {
     _setupInterceptors();
   }
 
@@ -55,11 +53,11 @@ class ApiClient {
                 if (tokenResponse != null) {
                   setAccessToken(tokenResponse.accessToken);
                   setRefreshToken(tokenResponse.refreshToken);
-                  
+
                   // Retry the original request with new token
                   final options = error.requestOptions;
                   options.headers['Authorization'] = 'Bearer $_accessToken';
-                  
+
                   final response = await _dio.fetch(options);
                   return handler.resolve(response);
                 }
@@ -69,7 +67,7 @@ class ApiClient {
                 return handler.next(error);
               }
             }
-            
+
             // No refresh callback or refresh token, session expired
             onTokenExpired?.call();
           }

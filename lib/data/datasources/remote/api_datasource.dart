@@ -12,16 +12,17 @@ abstract class ApiDataSource {
 
   Future<List<AccountModel>> getAccounts();
 
-  Future<List<TransactionModel>> getAccountTransactions(
+  Future<PaginatedTransactionsResponse> getAccountTransactions(
     String accountId, {
     int? page,
   });
 
   Future<List<BeneficiaryModel>> getBeneficiaries();
 
-  Future<TransferResponseModel> createTransfer(
-    String beneficiaryId, double amount,
-  );
+  Future<TransferResponseModel> createTransfer({
+    required String beneficiaryId,
+    required double amount,
+  });
 
   Future<TransferResponseModel> confirmTransfer(String transferId);
 

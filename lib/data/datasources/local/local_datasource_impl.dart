@@ -24,11 +24,10 @@ class LocalDataSourceImpl implements LocalDataSource {
         await db.execute('''
           CREATE TABLE $_accountsTable (
             id TEXT PRIMARY KEY,
-            account_number TEXT NOT NULL,
-            account_type TEXT NOT NULL,
-            balance REAL NOT NULL,
+            alias TEXT NOT NULL,
             currency TEXT NOT NULL,
-            created_at INTEGER NOT NULL
+            available_balance REAL NOT NULL,
+            ledger_balance REAL NOT NULL
           )
         ''');
 

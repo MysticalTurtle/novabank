@@ -1,11 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:novabank/data/models/models.dart';
 import 'api_datasource.dart';
 
 class MockApiDataSource implements ApiDataSource {
-  final Dio client;
-
-  MockApiDataSource({required this.client});
+  MockApiDataSource();
 
   @override
   Future<TokenResponseModel> login(String oAuthToken) async {
@@ -19,7 +16,6 @@ class MockApiDataSource implements ApiDataSource {
 
   @override
   Future<TokenResponseModel> refreshToken(String refreshToken) async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 600));
     return TokenResponseModel(
       accessToken:
@@ -31,9 +27,7 @@ class MockApiDataSource implements ApiDataSource {
 
   @override
   Future<void> logout() async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 300));
-    // No return value for logout
   }
 
   @override
@@ -66,68 +60,129 @@ class MockApiDataSource implements ApiDataSource {
   }
 
   @override
-  Future<List<TransactionModel>> getAccountTransactions(
+  Future<PaginatedTransactionsResponse> getAccountTransactions(
     String accountId, {
     int? page,
   }) async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 900));
 
-    final now = DateTime.now();
-    final pageOffset = (page ?? 1) - 1;
+    final currentPage = page ?? 1;
+    
+    // Only 2 pages available
+    if (currentPage > 2) {
+      return PaginatedTransactionsResponse(transactions: [], hasMore: false);
+    }
 
-    return [
-      TransactionModel(
-        id: 'txn_${pageOffset * 10 + 1}',
-        date: now
-            .subtract(Duration(days: pageOffset * 10 + 1))
-            .toIso8601String(),
-        amount: -45.99,
-        description: 'Coffee Shop',
-        type: 'debit',
-      ),
-      TransactionModel(
-        id: 'txn_${pageOffset * 10 + 2}',
-        date: now
-            .subtract(Duration(days: pageOffset * 10 + 2))
-            .toIso8601String(),
-        amount: 2500.00,
-        description: 'Salary Deposit',
-        type: 'credit',
-      ),
-      TransactionModel(
-        id: 'txn_${pageOffset * 10 + 3}',
-        date: now
-            .subtract(Duration(days: pageOffset * 10 + 3))
-            .toIso8601String(),
-        amount: -120.50,
-        description: 'Grocery Store',
-        type: 'debit',
-      ),
-      TransactionModel(
-        id: 'txn_${pageOffset * 10 + 4}',
-        date: now
-            .subtract(Duration(days: pageOffset * 10 + 5))
-            .toIso8601String(),
-        amount: -89.99,
-        description: 'Online Shopping',
-        type: 'debit',
-      ),
-      TransactionModel(
-        id: 'txn_${pageOffset * 10 + 5}',
-        date: now
-            .subtract(Duration(days: pageOffset * 10 + 7))
-            .toIso8601String(),
-        amount: 150.00,
-        description: 'Refund',
-        type: 'credit',
-      ),
-    ];
+    final now = DateTime.now();
+
+    if (currentPage == 1) {
+      // Page 1: 7 transactions
+      return PaginatedTransactionsResponse(
+        hasMore: true,
+        transactions: [
+        TransactionModel(
+          id: 'txn_1',
+          date: now.subtract(const Duration(days: 1)).toIso8601String(),
+          amount: -45.99,
+          description: 'Coffee Shop',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_2',
+          date: now.subtract(const Duration(days: 2)).toIso8601String(),
+          amount: 2500.00,
+          description: 'Salary Deposit',
+          type: 'credit',
+        ),
+        TransactionModel(
+          id: 'txn_3',
+          date: now.subtract(const Duration(days: 3)).toIso8601String(),
+          amount: -120.50,
+          description: 'Grocery Store',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_4',
+          date: now.subtract(const Duration(days: 4)).toIso8601String(),
+          amount: -89.99,
+          description: 'Online Shopping',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_5',
+          date: now.subtract(const Duration(days: 5)).toIso8601String(),
+          amount: 150.00,
+          description: 'Refund',
+          type: 'credit',
+        ),
+        TransactionModel(
+          id: 'txn_6',
+          date: now.subtract(const Duration(days: 6)).toIso8601String(),
+          amount: -35.00,
+          description: 'Restaurant',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_7',
+          date: now.subtract(const Duration(days: 7)).toIso8601String(),
+          amount: -250.00,
+          description: 'Electricity Bill',
+          type: 'debit',
+        ),
+      ]);
+    } else {
+      // Page 2: 6 transactions (total 13)
+      return PaginatedTransactionsResponse(
+        hasMore: false,
+        transactions: [
+        TransactionModel(
+          id: 'txn_8',
+          date: now.subtract(const Duration(days: 8)).toIso8601String(),
+          amount: -15.99,
+          description: 'Streaming Service',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_9',
+          date: now.subtract(const Duration(days: 9)).toIso8601String(),
+          amount: 500.00,
+          description: 'Transfer Received',
+          type: 'credit',
+        ),
+        TransactionModel(
+          id: 'txn_10',
+          date: now.subtract(const Duration(days: 10)).toIso8601String(),
+          amount: -78.50,
+          description: 'Gas Station',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_11',
+          date: now.subtract(const Duration(days: 11)).toIso8601String(),
+          amount: -200.00,
+          description: 'Insurance Payment',
+          type: 'debit',
+        ),
+        TransactionModel(
+          id: 'txn_12',
+          date: now.subtract(const Duration(days: 12)).toIso8601String(),
+          amount: 1000.00,
+          description: 'Freelance Payment',
+          type: 'credit',
+        ),
+        TransactionModel(
+          id: 'txn_13',
+          date: now.subtract(const Duration(days: 13)).toIso8601String(),
+          amount: -45.00,
+          description: 'Phone Bill',
+          type: 'debit',
+        ),
+      ]);
+    }
   }
 
   @override
   Future<List<BeneficiaryModel>> getBeneficiaries() async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 600));
     return [
       BeneficiaryModel(
@@ -149,10 +204,10 @@ class MockApiDataSource implements ApiDataSource {
   }
 
   @override
-  Future<TransferResponseModel> createTransfer(
-    String beneficiaryId,
-    double amount,
-  ) async {
+  Future<TransferResponseModel> createTransfer({
+    required String beneficiaryId,
+    required double amount,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 1000));
     return TransferResponseModel(
       id: 'transfer_${DateTime.now().millisecondsSinceEpoch}',

@@ -11,21 +11,24 @@ abstract class NovabankRepository {
 
   Future<Result<List<AccountModel>>> getAccounts();
 
-  Future<Result<List<TransactionModel>>> getAccountTransactions(
+  Future<Result<PaginatedTransactionsResponse>> getAccountTransactions(
     String accountId, {
     int? page,
   });
 
   Future<Result<List<BeneficiaryModel>>> getBeneficiaries();
 
-  Future<Result<TransferResponseModel>> createTransfer(int id, double amount);
+  Future<Result<TransferResponseModel>> createTransfer({
+    required String id,
+    required double amount,
+  });
 
   Future<Result<TransferResponseModel>> confirmTransfer(String transferId);
 
-  Future<Result<CardStatusResponseModel>> updateCardStatus(
-    String cardId,
-    String status,
-  );
+  Future<Result<CardStatusResponseModel>> updateCardStatus({
+    required String cardId,
+    required String status,
+  });
 
   Future<Result<void>> saveAccounts(List<AccountModel> accounts);
 
